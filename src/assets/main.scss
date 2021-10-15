@@ -1,0 +1,31 @@
+$ml: 16px;
+$mx: 8px;
+$ms: 4px;
+$mainColor: #121212;
+$grey: #8590a6;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+}
+
+*,
+ :after,
+ :before {
+    box-sizing: border-box;
+    border: 0 solid;
+}
+
+html {
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+}
+body {
+  font-family: -apple-system,BlinkMacSystemFont,Helvetica Neue,PingFang SC,Microsoft YaHei,Source Han Sans SC,Noto Sans CJK SC,WenQuanYi Micro Hei,sans-serif;
+}
+
+.self-end {
+    align-self: end;
+}
