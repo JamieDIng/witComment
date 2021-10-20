@@ -522,10 +522,11 @@ export default {
         padding-left: 28 + $ms;
         .commentText {
           font-size: 15px;
-          line-height: 24px;
+          line-height: 1.6;
+          word-break:break-all;
           ::v-deep .smileImg {
-            width: 16px;
-            height: 16px;
+            width: 21px;
+            height: 21px;
             vertical-align: middle;
           }
         }
