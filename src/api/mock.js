@@ -17,7 +17,7 @@ Mock.mock('/comments', { //输出数据
             require(`@/assets/avatar4.jpg`),
             require(`@/assets/avatar5.jpg`)
         ],
-        content: "@cparagraph(1, 4)",
+        content: "[:-o][:-|][:-(][:neutral:][表情]@cparagraph(1, 4)",
         createdTime: "@now()",
         'replyCount|10-100': 10,
         'likeCount|100-1000': 100,
@@ -58,12 +58,12 @@ Mock.mock(RegExp('/smile.*'), (options) => {
 //模拟回复
 Mock.mock(RegExp('/reply'), (option) => {
     let request = JSON.parse(option.body)
-        // console.log(request.params)
+    console.log('total', request.params.total)
     return Mock.mock({
         'code': 200,
         'data': [{
-            'id|+1': 101,
-            'userId|+1': request.params.userId,
+            'id|+1': request.params.total,
+            'userId': request.params.userId,
             userName: request.params.userName,
             'avatar|1': [
                 require(`@/assets/avatar0.jpg`),
@@ -73,7 +73,7 @@ Mock.mock(RegExp('/reply'), (option) => {
                 require(`@/assets/avatar4.jpg`),
                 require(`@/assets/avatar5.jpg`)
             ],
-            content: "@cparagraph(1, 4) (审核中)",
+            content: request.params.message + "(审核中)",
             createdTime: "@now()",
             'replyCount|10-100': 10,
             'likeCount|100-1000': 100,

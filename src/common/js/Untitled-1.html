@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <script>
+        function RegExpEscape(text) {
+            console.log('text',text);
+            console.log('textAftter',text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"));
+            return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+        }
+
+        function replaceEmoticons(text) {
+            var emoticons = {
+                ':)': 'smile.gif',
+                ':(': 'sad.gif',
+                ':-D': 'wink.gif'
+
+
+            }
+
+            var result = text;
+            var emotcode;
+            var regex;
+
+            for (emotcode in emoticons) {
+
+                regex = new RegExp(RegExpEscape(emotcode), 'gi');
+
+                console.log('reg',RegExpEscape(emotcode));
+
+                console.log('regex',regex);
+                result = result.replace(regex, function(match) {
+                    var pic = emoticons[match];
+                    console.log('match', match.toLowerCase())
+                    console.log('pic', pic);
+                    if (pic != undefined) {
+                        return '<img src="' + pic + '"/>';
+                    } else {
+                        return match;
+                    }
+                });
+            }
+
+            return result;
+        }
+
+
+        console.log(replaceEmoticons('[:)] :-D d :('))
+        let emoticons = {
+            'default': [{
+                'text': '表情',
+                'url': '表情.gif'
+            }, {
+                'text': ':mrgreen:',
+                'url': 'icon_mrgreen.gif'
+            }, {
+                'text': ':neutral:',
+                'url': 'icon_neutral.gif'
+            }, {
+                'text': ':twisted:',
+                'url': 'icon_twisted.gif'
+            }, {
+                'text': ':arrow:',
+                'url': 'icon_arrow.gif'
+            }, {
+                'text': ':shock:',
+                'url': 'icon_eek.gif'
+            }, {
+                'text': ':smile:',
+                'url': 'icon_smile.gif'
+            }, {
+                'text': ':???:',
+                'url': 'icon_confused.gif'
+            }, {
+                'text': ':cool:',
+                'url': 'icon_cool.gif'
+            }, {
+                'text': ':evil:',
+                'url': 'icon_evil.gif'
+            }, {
+                'text': ':grin:',
+                'url': 'icon_biggrin.gif'
+            }, {
+                'text': ':idea:',
+                'url': 'icon_idea.gif'
+            }, {
+                'text': ':oops:',
+                'url': 'icon_redface.gif'
+            }, {
+                'text': ':razz:',
+                'url': 'icon_razz.gif'
+            }, {
+                'text': ':roll:',
+                'url': 'icon_rolleyes.gif'
+            }, {
+                'text': ':wink:',
+                'url': 'icon_wink.gif'
+            }, {
+                'text': ':cry:',
+                'url': 'icon_cry.gif'
+            }, {
+                'text': ':eek:',
+                'url': 'icon_surprised.gif'
+            }, {
+                'text': ':lol:',
+                'url': 'icon_lol.gif'
+            }, {
+                'text': ':mad:',
+                'url': 'icon_mad.gif'
+            }, {
+                'text': ':sad:',
+                'url': 'icon_sad.gif'
+            }, {
+                'text': '8-)',
+                'url': 'icon_cool.gif'
+            }, {
+                'text': '8-O',
+                'url': 'icon_eek.gif'
+            }, {
+                'text': ':-(',
+                'url': 'icon_sad.gif'
+            }, {
+                'text': ':-)',
+                'url': 'icon_smile.gif'
+            }, {
+                'text': ':-?',
+                'url': 'icon_confused.gif'
+            }, {
+                'text': ':-D',
+                'url': 'icon_biggrin.gif'
+            }, {
+                'text': ':-P',
+                'url': 'icon_razz.gif'
+            }, {
+                'text': ':-o',
+                'url': 'icon_surprised.gif'
+            }, {
+                'text': ':-x',
+                'url': 'icon_mad.gif'
+            }, {
+                'text': ':-|',
+                'url': 'icon_neutral.gif'
+            }, {
+                'text': ';-)',
+                'url': 'icon_wink.gif'
+            }, ],
+        }
+        let value = '[表情][:-o][:-|][:-(][:neutral:][表情][表情]意关两前维或革做业周机之影两日适照。于主山查价规该林能确列况着。象群增空院状声选你花亲常量已。'
+
+
+        // let smileCode = /\[.*?\]/g;
+        // var pattern2 = /\[[\u4e00-\u9fa5]+\]/;
+
+        // let smileContent = value.match(smileCode);
+
+
+        // for (let i = 0; i < smileContent.length; i++) {
+        //     let svalue = value
+        //     let text = smileContent[i].replace(/\[|\]/g, '');
+        //     console.log('text', text)
+        //         // emoticons.default.find((obj) => {
+        //         //     if (obj.text == text) {
+        //         //         let reg = new RegExp('\\[' + text + '\]', 'g');
+        //         //         str = value.replace(reg, obj.url)
+        //         //     }
+        //         // })
+        // }
+        // // console.log('循环', str)
+        // // console.log(value);
+        // let aaa = '表情'
+        // let bbb = new RegExp('\\[' + aaa + '\]', '');
+
+
+
+        // let ccc = value.replace(bbb, '111');
+        // console.log('11', bbb);
+        // console.log('22', '/\[:-o\]/g');
+        // console.log(ccc)
+
+        // // console.log(emoticons);
+        // // console.log(smileContent);
+    </script>
+</body>
+
+</html>

@@ -80,7 +80,7 @@ export default {
 .wit-comments {
   padding: 16px;
   border: 1px solid #ebebeb;
-  border-radius: (6 / 16) + rem;
+  border-radius: (6rem / 16);
   background-color: #fff;
   box-shadow: 0 1px 3px rgb(18 18 18 / 10%);
   .wit-powered {

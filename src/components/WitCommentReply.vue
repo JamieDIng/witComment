@@ -12,7 +12,6 @@
           :placeholder="placeholder"
           resize="none"
           v-model="message"
-
           ref="onFocus"
           @input="inputMessage"
           @blur="blurMessage"
@@ -36,10 +35,8 @@
             ></el-button>
           </el-tooltip>
 
-          <el-popover placement="top" width="200" trigger="click">
-            <ul>
-              <li data-smile="表情" @click="onSmile($event)">表情</li>
-            </ul>
+          <el-popover placement="top" width="298" trigger="click">
+            <comment-smile></comment-smile>
             <el-tooltip
               class="item"
               :open-delay="300"
@@ -71,15 +68,12 @@
     </div>
 
     <div class="commentInfo">
-      <button @click='message=1'></button>
-      message: {{ message }} <br />
-      isinput: {{ isInput }} <br />
-      button: {{ onButton }} <br />
-      <!-- 按下键盘 s 快速进入回复 / Enter 换行，支持Emoji表情 -->
+      按下键盘 s 快速进入回复 / Enter 换行，支持Emoji表情
     </div>
   </div>
 </template>
 <script>
+import commentSmile from "./WitCommentSmilies.vue";
 import eventBus from "../common/js/eventBus";
 import axios from "axios";
 export default {
@@ -95,14 +89,19 @@ export default {
       toolTipShow: false,
     };
   },
+  components: {
+    commentSmile,
+  },
   methods: {
-    onSmile(e) {
-      let smile = "[" + e.currentTarget.dataset["smile"] + "]";
-      // let commentInput = document.querySelector('.commentTextarea');
-      this.message += smile;
-      this.$nextTick(()=>{
-        this.$refs.onFocus.focus()
-      })
+    smileCallBack() {
+      let _this = this;
+      eventBus.$on("onSmile", function (event) {
+        console.log("onSmile", event);
+        _this.message += event;
+        _this.$nextTick(() => {
+          _this.$refs.onFocus.focus();
+        });
+      });
     },
     inputTools(event) {
       event.preventDefault();
@@ -132,22 +131,24 @@ export default {
       } else {
         this.onButton = true;
       }
-      // console.log(e.length);
     },
     blurMessage() {
       //隐藏
       if (!this.message.length) {
         this.showButton = false;
-        this.replyActive = !this.replyActive;
+        this.showButton = false;
+        this.replyActive = false;
       }
 
-      console.log(this.message, this.isInput);
+      console.log("blur", this.message, this.isInput);
     },
     focusMessage() {
       //显示
       this.replyActive = this.showButton = true;
-      this.message.length > 0 ? this.onButton = false : this.onButton = true
-      console.log('显示',this.message.length);
+      this.message.length > 0
+        ? (this.onButton = false)
+        : (this.onButton = true);
+      console.log("显示", this.message.length);
     },
     commentPublish(event) {
       event.preventDefault();
@@ -161,23 +162,21 @@ export default {
         return;
       }
       axios
-        .post("/reply",{
-          params:{
+        .post("/reply", {
+          //模拟个登录用户
+          params: {
+            total: this.message.length,
             userId: 1,
-            userName: 'DIng',
-            isAuthor: true
-          }
+            userName: "DIng",
+            isAuthor: true,
+            message: this.message,
+          },
         })
         .then(function (response) {
-          // console.log('res',response.data.data[0])
-          // console.log('statu',response.data)
           if (response.status === 200) {
-            // let newComment = document.querySelector(".wit-comment-items");
-            // console.log(newComment);
-            // console.log(response.data.data);
             eventBus.$emit("commentButton", response.data.data[0]);
             that.showButton = false;
-            that.message = '';
+            that.message = "";
             that.showButton = false;
             that.replyActive = false;
           }
@@ -185,41 +184,44 @@ export default {
         .catch(function (error) {
           console.log(error);
         });
-      // eventBus.$emit("commentButton", this.message);
     },
     conmmentS() {
-      // let that = this;
-      // document.addEventListener("keyup", function (e) {
-      //   if (e.keyCode === 83) {
-      //     // that.$refs["onFocus"].focus();
-      //     that.$nextTick(function () {
-      //       document.querySelector(".el-textarea__inner").focus();
-      //     });
-      //   }
-      // });
+      let that = this;
+      document.addEventListener("keyup", function (e) {
+        if (e.keyCode === 83) {
+          that.$nextTick(function () {
+            that.$refs["onFocus"].focus();
+            // document.querySelector(".el-textarea__inner").focus();
+          });
+        }
+      });
     },
   },
   mounted() {
     let iconButton = document.querySelectorAll(".iconButton");
     iconButton.forEach((item, index) => {
       item.onclick = function () {
-        console.log('插入表情',index);
+        console.log("插入表情", index);
       };
     });
     this.conmmentS();
+    this.smileCallBack();
+  },
+  beforeDestroy() {
+    eventBus.$off("commentButton");
+    eventBus.$off("onSmile");
   },
   computed: {
     // changeValue () {
     //   return console.log(this.message)
     // }
   },
-  watch : {
-    message () {
+  watch: {
+    message() {
       // this.replyActive = true;
       // return console.log(this.message.length)
-    }
-  }
-
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
@@ -241,7 +243,7 @@ export default {
     transition: padding-right 0.3s ease;
     ::v-deep .el-textarea__inner {
       margin: 0;
-      padding:5px 60px 5px 15px;
+      padding: 5px 60px 5px 15px;
     }
     .commentSmile {
       display: flex;

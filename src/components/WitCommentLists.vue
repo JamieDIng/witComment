@@ -2,7 +2,7 @@
   <div>
     <div v-if="type === 'hots'" class="wit-comment-items">
       <div class="comment-title">精彩评论 ( 4 )</div>
-      
+
       <!-- 热评 -->
     </div>
     <div v-else class="wit-comment-items">
@@ -136,8 +136,11 @@
             </div>
           </div>
           <div class="wit-comment-content">
-            <div class="commentText">
-              {{ item.content }}
+            <div
+              class="commentText"
+              v-html="$options.filters.EmoticonDecode(item.content)"
+            >
+              {{ item.content | EmoticonDecode }}
             </div>
           </div>
           <div class="wit-comment-meta">
@@ -147,13 +150,14 @@
             >
               <i class="el-icon-caret-top"></i
               ><span class="buttonText">点赞</span>
-              <span>{{ item.likeCount }}</span>
+              <span>{{ item.likeCount | numberKibt }}</span>
             </button>
             <button class="metaButton">
               <i class="el-icon-chat-line-square"></i> 查看回复
             </button>
             <button class="metaButton" @click="reply(item.id, $event)">
-              <i class="el-icon-chat-dot-square"></i>回复 {{ item.replyCount }}
+              <i class="el-icon-chat-dot-square"></i>回复
+              {{ item.replyCount | numberKibt }}
             </button>
             <button
               class="metaButton"
@@ -191,7 +195,7 @@
 // eslint-disable-next-line
 import mock from "../api/mock";
 import NProgress from "nprogress";
-import 'nprogress/nprogress.css';
+import "nprogress/nprogress.css";
 import axios from "axios";
 import eventBus from "../common/js/eventBus";
 // eslint-disable-next-line
@@ -273,9 +277,12 @@ export default {
     };
   },
   components: {},
-  props: ["dataType",'commentPlacement'],
+  props: ["dataType", "commentPlacement"],
   mounted() {
     this.replyCallBack();
+  },
+  beforeDestroy() {
+    eventBus.$off("commentButton");
   },
   created() {
     //静态数据
@@ -427,7 +434,7 @@ export default {
     replyCallBack() {
       const _this = this;
       eventBus.$on("commentButton", function (event) {
-        console.log("eventBus", event);
+        console.log("eventBus 1", event);
         //静态回复数据
         // let obj = {
         //   id: "",
@@ -516,6 +523,11 @@ export default {
         .commentText {
           font-size: 15px;
           line-height: 24px;
+          ::v-deep .smileImg {
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+          }
         }
       }
       //meta
