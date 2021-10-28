@@ -1,30 +1,31 @@
 <h1 align="center">witComment</h1>
 
-## About
-This is a learning project and a comment component. Please do not use it in the production environment because it is not perfect. I will update and modify it iteratively.
+## 关于
+这是一个学习项目一个评论组件，功能参考zhihu comment，请不要用在生产环境因为它还不完善，我会进行迭代更新和修改。
 
-Since I am still learning, you may find errors in the code. If you find problems or have better suggestions, you are welcome to point out 😉
+因为热爱💖目前依然还在学习前端，你可能在代码里发现错误，如果你发现了问题或者有更好的建议欢迎指出 😉
 
-## Components
+
+## 使用
 - [Vue2](https://github.com/vuejs/vue)
 - [Element UI 2](https://github.com/ElemeFE/element)  
 - [Clipboard](https://github.com/zenorocha/clipboard.js)
 - [Sass](https://github.com/sass/sass)
 - [Nprogress](https://github.com/rstacruz/nprogress)
 
-## Case object
+## 参考
 
 [ZhiHu.com](https://www.zhihu.com)
 
-## ChangeLogs
+## 更新日志
 
 [English](./README.md) | [简体中文](./README.md)
 
-## Install
+## 安装
 ```
 npm install
 ```
-## Usage 
+## 页面引入 
 ```
 import WitComment from "./components/WitComment.vue";
 ```
