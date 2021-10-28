@@ -6,7 +6,9 @@
       <!-- 热评 -->
     </div>
     <div v-else class="wit-comment-items">
-      <div class="comment-title">评论 ( {{ commentData.length }} )</div>
+      <div class="comment-title nprogress">
+        评论 ( {{ commentData.length }} )
+      </div>
       <el-pagination
         v-if="commentPlacement == 'top'"
         @size-change="handleSizeChange"
@@ -24,6 +26,7 @@
         :key="item.id"
         :data-id="item.id"
         class="wit-comment-item"
+        :class="{ 'comment-child': item.lastThreeComments.length > 0 }"
       >
         <div class="wit-comment-inner">
           <div class="wit-comment-header">
@@ -70,11 +73,11 @@
                       :size="70"
                       class="userCard-avatar"
                       shape="square"
-                      src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+                      :src="item.avatar"
                     ></el-avatar>
                     <div class="userCard-info">
                       <div class="infoHeader">
-                        姓名 <i class="el-icon-platform-eleme verify-icon"></i>
+                        {{item.userName}} <i class="el-icon-platform-eleme verify-icon"></i>
                       </div>
                       <div class="infoBody">一群不安分的实验室检测工程师</div>
                       <div class="infoVerify">
@@ -101,7 +104,12 @@
                           </div>
                         </div>
                         <div class="infoButton">
-                          <el-button type="primary" size="mini">关注</el-button>
+                          <el-button
+                            type="primary"
+                            size="mini"
+                            @click="follow(item.id,$event)"
+                            >关注</el-button
+                          >
                           <el-button size="mini">查看</el-button>
                         </div>
                       </div>
@@ -146,11 +154,16 @@
           <div class="wit-comment-meta">
             <button
               class="metaButton"
+              :class="{ isliked: item.isLiked }"
               @click="onLikeThis(index, item.id, $event)"
             >
               <i class="el-icon-caret-top"></i
-              ><span class="buttonText">点赞</span>
-              <span>{{ item.likeCount | numberKibt }}</span>
+              ><span class="buttonText">{{
+                item.likeCount > 0 ? "" : "赞"
+              }}</span>
+              <span>{{
+                (item.likeCount > 0 ? item.likeCount : "") | numberKibt
+              }}</span>
             </button>
             <button class="metaButton">
               <i class="el-icon-chat-line-square"></i> 查看回复
@@ -173,6 +186,206 @@
               <i class="el-icon-delete"></i>删除
             </button>
           </div>
+        </div>
+        <!-- 子评论 -->
+        <div class="comment-children">
+          <div
+            class="wit-comment-item"
+            v-for="(childItem, childIndex) in item.lastThreeComments.slice(
+              0,
+              1
+            )"
+            :key="childItem.id"
+            :data-id="childItem.id"
+          >
+            <div class="wit-comment-inner">
+              <div class="wit-comment-header">
+                <el-popover
+                  :open-delay="300"
+                  :visible-arrow="false"
+                  placement="bottom-start"
+                  popper-class="popperUserCard"
+                  transition="fade-in-linear"
+                  trigger="hover"
+                  width="360"
+                >
+                  <!-- 会员卡片 -->
+                  <div class="userCard">
+                    <!-- 骨架 -->
+                    <el-skeleton :loading="loading" :throttle="500" animated>
+                      <template slot="template">
+                        <el-skeleton-item
+                          style="width: 240px; height: 240px"
+                          variant="image"
+                        />
+                        <div style="padding: 14px">
+                          <el-skeleton-item style="width: 50%" variant="h3" />
+                          <div
+                            style="
+                              display: flex;
+                              align-items: center;
+                              justify-items: space-between;
+                              margin-top: 16px;
+                              height: 16px;
+                            "
+                          >
+                            <el-skeleton-item
+                              style="margin-right: 16px"
+                              variant="text"
+                            />
+                            <el-skeleton-item
+                              style="width: 30%"
+                              variant="text"
+                            />
+                          </div>
+                        </div>
+                      </template>
+                      <template>
+                        <div class="userCard-cover"></div>
+                        <el-avatar
+                          :size="70"
+                          class="userCard-avatar"
+                          shape="square"
+                          src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+                        ></el-avatar>
+                        <div class="userCard-info">
+                          <div class="infoHeader">
+                            姓名
+                            <i class="el-icon-platform-eleme verify-icon"></i>
+                          </div>
+                          <div class="infoBody">
+                            一群不安分的实验室检测工程师
+                          </div>
+                          <div class="infoVerify">
+                            <i class="el-icon-platform-eleme verify-icon"></i>
+                            已认证的官方帐号
+                          </div>
+                          <div class="infoFooter">
+                            <div class="infoCount">
+                              <div class="number">
+                                <div class="numberName">回复</div>
+                                <div class="numberValue">
+                                  {{ 2363 | numberKibt }}
+                                </div>
+                              </div>
+                              <div class="number">
+                                <div class="numberName">文章</div>
+                                <div class="numberValue">
+                                  {{ 63 | numberKibt }}
+                                </div>
+                              </div>
+                              <div class="number">
+                                <div class="numberName">关注者</div>
+                                <div class="numberValue">
+                                  {{ 12345678 | numberKibt }}
+                                </div>
+                              </div>
+                            </div>
+                            <div class="infoButton">
+                              <el-button type="primary" size="mini"
+                                >关注</el-button
+                              >
+                              <el-button size="mini">查看</el-button>
+                            </div>
+                          </div>
+                        </div>
+                      </template>
+                    </el-skeleton>
+                    <!-- 骨架 -->
+                  </div>
+
+                  <div slot="reference" class="wit-comment-avatar">
+                    <el-avatar
+                      :size="avatarSize"
+                      :src="childItem.user.avatar"
+                      class="avatar"
+                      shape="square"
+                    ></el-avatar>
+                  </div>
+                </el-popover>
+
+                <div class="wit-comment-author">
+                  {{ childItem.user.userName }}
+                  <span v-if="childItem.isAuthor">(作者)</span>
+                </div>
+                <div
+                  class="wit-comment-time"
+                  data-clipboard-action="copy"
+                  data-clipboard-text="网址"
+                  @click="copyFloor(ChildIndex)"
+                >
+                  {{ childItem.createdTime }}
+                </div>
+              </div>
+              <div class="wit-comment-content">
+                <div
+                  class="commentText"
+                  v-html="$options.filters.EmoticonDecode(childItem.content)"
+                >
+                  {{ childItem.content | EmoticonDecode }}
+                </div>
+              </div>
+              <div class="wit-comment-meta">
+                <button
+                  class="metaButton"
+                  :class="{ isliked: childItem.isLiked }"
+                  @click="onLikeThis(index, childItem.id, $event)"
+                >
+                  <i class="el-icon-caret-top"></i
+                  ><span class="buttonText">{{
+                    childItem.likeCount > 0 ? "" : "赞"
+                  }}</span>
+                  <span>{{ childItem.likeCount | numberKibt }}</span>
+                </button>
+
+                <button class="metaButton" @click="reply(childItem.id, $event)">
+                  <i class="el-icon-chat-dot-square"></i>回复
+                  {{ childItem.replyCount | numberKibt }}
+                </button>
+                <button
+                  class="metaButton"
+                  @click="unLikeThis(childIndex, childItem.id, $event)"
+                >
+                  <i class="el-icon-caret-bottom"></i
+                  ><span class="buttonText">踩</span>
+                </button>
+                <button class="metaButton">
+                  <i class="el-icon-s-flag"></i> 举报
+                </button>
+                <button
+                  class="metaButton"
+                  v-if="item.canDelete"
+                  @click="deleteReply(childIndex, childItem.id)"
+                >
+                  <i class="el-icon-delete"></i>删除
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 子评论 -->
+        <div
+          class="comment-children more"
+          v-if="item.lastThreeComments.length > 1"
+        >
+          <button @click="commentMoreChild = true">
+            查看全部 {{ item.lastThreeComments.length }} 条回复
+          </button>
+          <el-dialog
+            title="提示"
+            v-if="item.lastThreeComments.length > 1"
+            :visible.sync="commentMoreChild"
+            width="30%"
+            center
+          >
+            <span>需要注意的是内容是默认不居中的</span>
+            <span slot="footer" class="dialog-footer">
+              <el-button @click="commentMoreChild = false">取 消</el-button>
+              <el-button type="primary" @click="commentMoreChild = false"
+                >确 定</el-button
+              >
+            </span>
+          </el-dialog>
         </div>
       </div>
 
@@ -200,18 +413,23 @@ import axios from "axios";
 import eventBus from "../common/js/eventBus";
 // eslint-disable-next-line
 // import filters from "../common/js/filters";
+const cubic = (value) => Math.pow(value, 3);
+const easeInOutCubic = (value) =>
+  value < 0.5 ? cubic(value * 2) / 2 : 1 - cubic((1 - value) * 2) / 2;
 
 export default {
   name: "CommentList",
   data() {
     return {
+      el: null,
       page: 1,
       total: 100,
       limit: 10,
       loading: false,
       currentDate: "2021-06-01",
       // avatarUrl: require(`@/assets/avatar${Math.floor(Math.random() * (6 - 0 + 1)) + 0}.jpg`),
-      avatarSize: "small",
+      avatarSize: 24,
+      commentMoreChild: false,
       // commentData: [
       //   {
       //     id: 20,
@@ -280,6 +498,7 @@ export default {
   props: ["dataType", "commentPlacement"],
   mounted() {
     this.replyCallBack();
+    this.el = document.documentElement;
   },
   beforeDestroy() {
     eventBus.$off("commentButton");
@@ -308,23 +527,36 @@ export default {
           this.commentData = response.data.data;
           NProgress.done();
         }
+        console.log(this.commentData);
       })
       .catch((error) => {
         console.log(error);
       });
   },
   methods: {
+    follow(id,event) {
+      let _this = event.currentTarget;
+      console.log(_this.className);
+      if (_this.className.indexOf("isfollow") != -1) {
+        _this.innerText = "关注";
+        _this.className = "el-button el-button--primary el-button--mini";
+                _this.addEventListener("mouseover", function () {
+          _this.innerText = _this.innerText.replace(/已关注/, "取消关注");
+        });
+        _this.addEventListener("mouseout", function () {
+          _this.innerText = _this.innerText.replace(/取消关注/, "已关注");
+        });
+      } else {
+        _this.className += " isfollow";
+        _this.innerText = "取消关注";
+      }
+
+    },
     onLikeThis(index, id, event) {
-      let likeText = event.currentTarget.querySelector(".buttonText");
       if (!this.liked) {
         this.commentData[index].likeCount++;
       } else {
         this.commentData[index].likeCount--;
-      }
-      if (likeText.innerHTML.indexOf("已点赞") === -1) {
-        likeText.innerHTML = "已点赞";
-      } else {
-        likeText.innerHTML = "点赞";
       }
       this.liked = !this.liked;
       if (event.currentTarget.className.indexOf("isliked") === -1) {
@@ -346,6 +578,12 @@ export default {
       this.page = 1;
     },
     handleCurrentChange(value) {
+      let backTop = document.querySelector(".nprogress");
+      console.log("位置", backTop.offsetTop);
+      // document.body.scrollTop = 0;
+      // scrollTo(backTop.offsetTop,0);
+      console.log(this.el);
+
       NProgress.start();
       axios
         .post("/comments", {
@@ -356,6 +594,7 @@ export default {
         .then((response) => {
           this.page = value;
           NProgress.done();
+          this.scrollToTop();
           console.log("成功", response);
         })
         .catch((error) => {
@@ -451,6 +690,25 @@ export default {
         //console.log(_this.commentData);
       });
     },
+    scrollToTop() {
+      const el = this.el;
+      const beginTime = Date.now();
+      const beginValue = el.scrollTop;
+      const rAF =
+        window.requestAnimationFrame || ((func) => setTimeout(func, 16));
+      const frameFunc = () => {
+        const progress = (Date.now() - beginTime) / 500;
+        if (progress < 1) {
+          el.scrollTop = beginValue * (1 - easeInOutCubic(progress));
+          console.log(Date.now());
+          rAF(frameFunc);
+        } else {
+          el.scrollTop = 0;
+        }
+      };
+      rAF(frameFunc);
+      console.log(frameFunc);
+    },
   },
   computed: {
     commentDatas: function () {
@@ -486,14 +744,24 @@ export default {
     padding: $mx $ml;
   }
   .wit-comment-item {
+    &:not(:last-child) .wit-comment-inner::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: block;
+      // margin-right: 20px;
+      // margin-left: 84px;
+      border-bottom: 1px solid #f6f6f6;
+    }
     .wit-comment-inner {
       //header
-      padding-bottom: $mx;
-      margin-bottom: $mx;
-      border-bottom: 1px solid #eee;
-      &:last-child {
-        border: 0;
-      }
+      padding-top: 12px;
+      padding-bottom: 10px;
+      // padding-bottom: $mx;
+      // margin-bottom: $mx;
+      position: relative;
       .wit-comment-header {
         display: flex;
         align-items: center;
@@ -523,7 +791,7 @@ export default {
         .commentText {
           font-size: 15px;
           line-height: 1.6;
-          word-break:break-all;
+          word-break: break-all;
           ::v-deep .smileImg {
             width: 21px;
             height: 21px;
@@ -540,6 +808,7 @@ export default {
         color: $grey;
         display: flex;
         align-items: center;
+        position: relative;
         .metaButton {
           font-size: 14px;
           font-family: inherit;
@@ -579,6 +848,52 @@ export default {
           .metaButton:nth-last-child(1) {
             opacity: 1;
           }
+        }
+      }
+    }
+    &.comment-child {
+      border-bottom: 1px solid #f6f6f6;
+      &:nth-last-child(2) {
+        border-bottom: 0;
+      }
+      .wit-comment-inner {
+        &::after {
+          border: 0;
+        }
+      }
+      .comment-children {
+        padding-left: 33px;
+        &:last-child .wit-comment-inner::after {
+          border: 0;
+        }
+        &.more {
+          font-size: 14px;
+          color: #8590a6;
+          padding-top: 12px;
+          padding-bottom: 12px;
+          &:hover {
+            cursor: pointer;
+            color: #76839b;
+          }
+          &::before {
+            content: "";
+            display: block;
+            position: relative;
+            top: -12px;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            border-top: 1px solid #f6f6f6;
+          }
+        }
+        .wit-comment-inner::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          right: 0;
+          border-top: 1px solid #f6f6f6;
         }
       }
     }
@@ -670,6 +985,10 @@ export default {
                 border-color: #005ce6;
                 background-color: #005ce6;
               }
+            }
+            &.isfollow {
+              border-color: #76839b !important;
+              background-color: #76839b !important;
             }
             &:hover {
               background-color: rgba(133, 144, 166, 0.06);
