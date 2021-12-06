@@ -10,6 +10,7 @@
           type="textarea"
           autosize
           :placeholder="placeholder"
+          :data-replyid="dataReplyid"
           resize="none"
           v-model="message"
           ref="onFocus"
@@ -61,6 +62,7 @@
         :class="['commentButton', isInput ? 'self-end' : '']"
         type="primary"
         :disabled="onButton"
+        :data-replyid="dataReplyid"
         size="small"
         @mousedown.native="commentPublish($event)"
         >发布</el-button
@@ -74,11 +76,11 @@
 </template>
 <script>
 import commentSmile from "./WitCommentSmilies.vue";
-import eventBus from "../common/js/eventBus";
+import eventBus from "../../common/js/eventBus";
 import axios from "axios";
 export default {
   name: "Reply",
-  props: ["placeholder"],
+  props: ["placeholder","data-replyid"],
   data() {
     return {
       message: "",
@@ -96,7 +98,7 @@ export default {
     smileCallBack() {
       let _this = this;
       eventBus.$on("onSmile", function (event) {
-        console.log("onSmile", event);
+        // console.log("onSmile", event);
         _this.message += event;
         _this.$nextTick(() => {
           _this.$refs.onFocus.focus();
@@ -113,11 +115,11 @@ export default {
 
       if (type == "smile") {
         // let html = document.createElement('div');
-        console.log("打开表情");
+        // console.log("打开表情");
         // event.target.appnode
         // event.target.parentElement.innerHTML = html;
       } else if (type == "image") {
-        console.log("上传图片");
+        // console.log("上传图片");
       }
     },
     inputMessage(e) {
@@ -140,7 +142,7 @@ export default {
         this.replyActive = false;
       }
 
-      console.log("blur", this.message, this.isInput);
+      // console.log("blur", this.message, this.isInput);
     },
     focusMessage() {
       //显示
@@ -148,10 +150,11 @@ export default {
       this.message.length > 0
         ? (this.onButton = false)
         : (this.onButton = true);
-      console.log("显示", this.message.length);
+      // console.log("显示", this.message.length);
     },
     commentPublish(event) {
       event.preventDefault();
+      // console.log(event.currentTarget.parentElement.querySelector('textarea').dataset['replyid'])
       let that = this;
       if (this.message.length < 3) {
         this.$message({
@@ -170,16 +173,20 @@ export default {
             userName: "DIng",
             isAuthor: true,
             message: this.message,
+            "replyPostId": event.currentTarget.dataset.replyid, //被回复回复ID
+            "replyUserId": 21404, // 被回复用户
           },
         })
         .then(function (response) {
           if (response.status === 200) {
+            console.log('response',response);
             eventBus.$emit("commentButton", response.data.data[0]);
             that.showButton = false;
             that.message = "";
             that.showButton = false;
             that.replyActive = false;
           }
+          console.log('error',response.data.data[0]);
         })
         .catch(function (error) {
           console.log(error);
@@ -189,6 +196,7 @@ export default {
       let that = this;
       document.addEventListener("keyup", function (e) {
         if (e.keyCode === 83) {
+          if(!that.$nextTick) return;
           that.$nextTick(function () {
             that.$refs["onFocus"].focus();
             // document.querySelector(".el-textarea__inner").focus();
@@ -225,7 +233,7 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-@import "../assets/main.scss";
+@import "../../assets/main.scss";
 .commentInfo {
   width: 100%;
   display: block;

@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import eventBus from "../common/js/eventBus";
-import Smilies from "../common/js/smilies";
+import eventBus from "../../common/js/eventBus";
+import Smilies from "../../common/js/smilies";
 export default {
-  name: "HelloWorld",
+  name: "Smilies",
   data() {
     return {
       emoticons: {},
@@ -74,7 +74,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scope>
-@import "../assets/main.scss";
+@import "../../assets/main.scss";
 .comment-smile {
   ul {
     padding: 0;

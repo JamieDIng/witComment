@@ -19,8 +19,6 @@
       </div>
     </div>
 
-    <wit-comment-lists data-type="hots" v-if="commentHot"></wit-comment-lists>
-
     <wit-comment-lists
       :comment-placement="commentPlacement"
     ></wit-comment-lists>
@@ -44,6 +42,7 @@ export default {
   data() {
     return {
       onHots: true,
+      theme: 'blue'
     };
   },
   props: [
@@ -70,11 +69,27 @@ export default {
       console.log(item);
     },
   },
+  mounted() {
+    console.log(this.$el);
+    this.$el.style.setProperty('--theme-style', 'blue')
+  },
 };
 </script>
 
 <style lang="scss" scope>
-@import "../assets/main.scss";
+@import "../../assets/main.scss";
+$html-font-size: 16px !default;
+html {
+  font-size: $html-font-size;
+}
+@function px2rem($px) {
+  @return $px / $html-font-size * 1rem;
+}
+
+.comment-header {
+  // background-color: var(--theme-style);
+  //color: var(--theme-style);
+}
 
 /* 外边距 20 内边距 10 行内 5 */
 .wit-comments {

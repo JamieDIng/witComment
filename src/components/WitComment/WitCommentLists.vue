@@ -5,7 +5,9 @@
 
       <!-- 热评 -->
     </div>
+    
     <div v-else class="wit-comment-items">
+      <div> 日期:{{ 1635738742 | timeFormat }}</div>
       <div class="comment-title nprogress">
         评论 ( {{ commentData.length }} )
       </div>
@@ -28,6 +30,7 @@
         class="wit-comment-item"
         :class="{ 'comment-child': item.lastThreeComments.length > 0 }"
       >
+        - {{ item.lastThreeComments.length }} -
         <div class="wit-comment-inner">
           <div class="wit-comment-header">
             <el-popover
@@ -77,7 +80,8 @@
                     ></el-avatar>
                     <div class="userCard-info">
                       <div class="infoHeader">
-                        {{item.userName}} <i class="el-icon-platform-eleme verify-icon"></i>
+                        {{ item.userName }}
+                        <i class="el-icon-platform-eleme verify-icon"></i>
                       </div>
                       <div class="infoBody">一群不安分的实验室检测工程师</div>
                       <div class="infoVerify">
@@ -107,7 +111,7 @@
                           <el-button
                             type="primary"
                             size="mini"
-                            @click="follow(item.id,$event)"
+                            @click="follow(item.id, $event)"
                             >关注</el-button
                           >
                           <el-button size="mini">查看</el-button>
@@ -139,7 +143,7 @@
               data-clipboard-text="网址"
               @click="copyFloor(index)"
             >
-              {{ item.createdTime }}
+              {{ item.createdTime | timeFormat }}
               {{ index + 1 == 1 ? "沙发" : index + 1 + "楼" }}
             </div>
           </div>
@@ -169,7 +173,8 @@
               <i class="el-icon-chat-line-square"></i> 查看回复
             </button>
             <button class="metaButton" @click="reply(item.id, $event)">
-              <i class="el-icon-chat-dot-square"></i>回复
+              <i class="el-icon-chat-dot-square"></i
+              >{{ ReplyMiniId === item.id ? "取消回复" : "回复" }}
               {{ item.replyCount | numberKibt }}
             </button>
             <button
@@ -186,14 +191,23 @@
               <i class="el-icon-delete"></i>删除
             </button>
           </div>
+          <div
+            class="commentReplyMini"
+            v-if="ReplyMiniId == item.id"
+            :data-replyid="item.id"
+          >
+            {{ item.id }}
+            <comment-reply :data-replyid="item.id"></comment-reply>
+          </div>
         </div>
         <!-- 子评论 -->
         <div class="comment-children">
+          <!-- .slice(0,2) -->
           <div
             class="wit-comment-item"
             v-for="(childItem, childIndex) in item.lastThreeComments.slice(
               0,
-              1
+              2
             )"
             :key="childItem.id"
             :data-id="childItem.id"
@@ -250,7 +264,7 @@
                         ></el-avatar>
                         <div class="userCard-info">
                           <div class="infoHeader">
-                            姓名
+                            {{ childItem.user.userName }}
                             <i class="el-icon-platform-eleme verify-icon"></i>
                           </div>
                           <div class="infoBody">
@@ -293,7 +307,6 @@
                     </el-skeleton>
                     <!-- 骨架 -->
                   </div>
-
                   <div slot="reference" class="wit-comment-avatar">
                     <el-avatar
                       :size="avatarSize"
@@ -303,10 +316,20 @@
                     ></el-avatar>
                   </div>
                 </el-popover>
-
                 <div class="wit-comment-author">
-                  {{ childItem.user.userName }}
-                  <span v-if="childItem.isAuthor">(作者)</span>
+                  <span>{{ childItem.user.userName }}</span>
+                  <span class="isauthor"
+                    v-if="childItem.user.userId == childItem.replyUser.userId"
+                    >(作者)</span
+                  >
+                  <span class="info">回复</span>
+                  <span>{{ childItem.replyUser.userName }}</span>
+                  <span class="isauthor"
+                    v-if="
+                      childItem.replyUser.userId == childItem.replyUser.userId
+                    "
+                    >(作者)</span
+                  >
                 </div>
                 <div
                   class="wit-comment-time"
@@ -339,7 +362,8 @@
                 </button>
 
                 <button class="metaButton" @click="reply(childItem.id, $event)">
-                  <i class="el-icon-chat-dot-square"></i>回复
+                  <i class="el-icon-chat-dot-square"></i
+                  >{{ ReplyMiniId === childItem.id ? "取消回复" : "回复" }}
                   {{ childItem.replyCount | numberKibt }}
                 </button>
                 <button
@@ -359,6 +383,13 @@
                 >
                   <i class="el-icon-delete"></i>删除
                 </button>
+              </div>
+              <div
+                class="commentReplyMini"
+                v-if="ReplyMiniId === childItem.id"
+                :data-replyid="childItem.id"
+              >
+                回复框
               </div>
             </div>
           </div>
@@ -405,12 +436,13 @@
   </div>
 </template>
 <script>
+import commentReply from "./WitCommentReply.vue";
 // eslint-disable-next-line
-import mock from "../api/mock";
+import mock from "../../api/mock";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import axios from "axios";
-import eventBus from "../common/js/eventBus";
+import eventBus from "../../common/js/eventBus";
 // eslint-disable-next-line
 // import filters from "../common/js/filters";
 const cubic = (value) => Math.pow(value, 3);
@@ -418,7 +450,7 @@ const easeInOutCubic = (value) =>
   value < 0.5 ? cubic(value * 2) / 2 : 1 - cubic((1 - value) * 2) / 2;
 
 export default {
-  name: "CommentList",
+  name: "WitCommentLists",
   data() {
     return {
       el: null,
@@ -427,96 +459,31 @@ export default {
       limit: 10,
       loading: false,
       currentDate: "2021-06-01",
-      // avatarUrl: require(`@/assets/avatar${Math.floor(Math.random() * (6 - 0 + 1)) + 0}.jpg`),
       avatarSize: 24,
       commentMoreChild: false,
-      // commentData: [
-      //   {
-      //     id: 20,
-      //     userId: 1,
-      //     userName: "DIng",
-      //     avatar: require(`@/assets/avatar0.jpg`),
-      //     content:
-      //       "处理器对比，二者性能都很强再来看看处理器方面，iPhone 13系列此次选用了全新的A15处理器，性能实力达到了业内顶尖级别。而iQOO 8系列采用的也是行业顶尖的处理器，比如iQOO 8 Pro用的就是骁龙888 Plus，作为当前安卓阵营最强的处理器，骁龙888 Plus能让手机在高负载场景中保持流畅运行。👍",
-      //     createdTime: "30 秒前",
-      //     replyCount: 121,
-      //     likeCount: 3321,
-      //   },
-      //   {
-      //     id: 30,
-      //     userId: 2,
-      //     userName: "神一样的对手",
-      //     avatar: require(`@/assets/avatar4.jpg`),
-      //     content:
-      //       "目前刚上班，觉得有一个技能真蛮重要的，即使不赚钱，当成一份以后职场能力去学习也值了",
-      //     createdTime: "3 分钟前",
-      //     replyCount: 3,
-      //     likeCount: 45,
-      //   },
-      //   {
-      //     id: 31,
-      //     userId: 3,
-      //     userName: "暖暖的阳光",
-      //     avatar: require(`@/assets/avatar1.jpg`),
-      //     content: "解锁方式，快充，游戏体验爱酷比苹果领先的多、",
-      //     createdTime: "18 小时前",
-      //     replyCount: 2,
-      //     likeCount: 456,
-      //   },
-      //   {
-      //     id: 32,
-      //     userId: 4,
-      //     userName: "进击的土豆",
-      //     avatar: require(`@/assets/avatar2.jpg`),
-      //     content:
-      //       " 说的很好，手机不过是我们生活中的一部分。它也只是一个消耗品而已，没必要老是纠结自己买的价格到底香不香。只有自己用着舒服才是最好的产品，生活也是一样活在当下吧！ ",
-      //     createdTime: "1 天前",
-      //     replyCount: 4,
-      //     likeCount: 73,
-      //   },
-      //   {
-      //     id: 33,
-      //     userId: 5,
-      //     userName: "無待丶少遊",
-      //     avatar: require(`@/assets/avatar3.jpg`),
-      //     content:
-      //       "所谓搞关系就是同流合污，就是一起吃喝玩乐，只有跟上级同流合污，他们才敢用你，放心你。[赞][赞]",
-      //     createdTime: "08-13",
-      //     replyCount: 3,
-      //     likeCount: 11,
-      //   },
-      // ],
+
       commentData: [],
       smile: [{}],
+      ReplyMiniId: null,
       HotCommentCount: 1,
       ListCommentCount: 10,
       liked: false,
       type: this.dataType,
     };
   },
-  components: {},
+  components: {
+    commentReply,
+  },
   props: ["dataType", "commentPlacement"],
   mounted() {
     this.replyCallBack();
     this.el = document.documentElement;
   },
   beforeDestroy() {
+    console.log("beforeDestroy");
     eventBus.$off("commentButton");
   },
   created() {
-    //静态数据
-    // let edata = this.commentData;
-    // let newData = [];
-    // if (edata.length < 10) {
-    //   for (let i = 0; i < 100; i++) {
-    //     newData.push({
-    //       ...edata[Math.floor(Math.random() * edata.length)],
-    //       id: 100 + i,
-    //     });
-    //   }
-    // }
-    // this.commentData = newData;
-
     axios
       .post("/comments", {
         _page: this.page,
@@ -527,20 +494,20 @@ export default {
           this.commentData = response.data.data;
           NProgress.done();
         }
-        console.log(this.commentData);
+        // console.log(this.commentData);
       })
       .catch((error) => {
         console.log(error);
       });
   },
   methods: {
-    follow(id,event) {
+    follow(id, event) {
       let _this = event.currentTarget;
       console.log(_this.className);
       if (_this.className.indexOf("isfollow") != -1) {
         _this.innerText = "关注";
         _this.className = "el-button el-button--primary el-button--mini";
-                _this.addEventListener("mouseover", function () {
+        _this.addEventListener("mouseover", function () {
           _this.innerText = _this.innerText.replace(/已关注/, "取消关注");
         });
         _this.addEventListener("mouseout", function () {
@@ -550,7 +517,6 @@ export default {
         _this.className += " isfollow";
         _this.innerText = "取消关注";
       }
-
     },
     onLikeThis(index, id, event) {
       if (!this.liked) {
@@ -578,12 +544,6 @@ export default {
       this.page = 1;
     },
     handleCurrentChange(value) {
-      let backTop = document.querySelector(".nprogress");
-      console.log("位置", backTop.offsetTop);
-      // document.body.scrollTop = 0;
-      // scrollTo(backTop.offsetTop,0);
-      console.log(this.el);
-
       NProgress.start();
       axios
         .post("/comments", {
@@ -604,36 +564,41 @@ export default {
     resiData() {
       this.commentData = [];
     },
+    //eslint-disable-next-line
     reply(id, event) {
-      if (id) {
-        //楼层回复
-        let replyDiv = document.createElement("div");
-        replyDiv.className = "commentReplyMini";
-        replyDiv.setAttribute("data-replyid", id);
-        replyDiv.innerText = "1111";
-        if (event.currentTarget.innerHTML.indexOf("取消回复") > 0) {
-          event.currentTarget.innerHTML = event.currentTarget.innerHTML.replace(
-            /取消回复/,
-            "回复"
-          );
-        } else {
-          event.currentTarget.innerHTML = event.currentTarget.innerHTML.replace(
-            /回复/,
-            "取消回复"
-          );
-        }
-        if (
-          event.currentTarget.parentNode.parentNode.querySelector(
-            ".commentReplyMini"
-          )
-        )
-          return;
-        event.currentTarget.parentNode.parentNode.appendChild(replyDiv);
-        console.log(event.currentTarget.parentNode);
-        console.log(id);
-      } else {
-        //评论回复
-      }
+      this.ReplyMiniId = id;
+      // if (id == 3) {
+      //   //楼层回复
+      //   if (document.querySelector(".commentReplyMini")) {
+      //     // document.querySelector('.commentReplyMini').remove();
+      //   }
+      //   let replyDiv = document.createElement("div");
+      //   replyDiv.className = "commentReplyMini";
+      //   replyDiv.setAttribute("data-replyid", id);
+      //   replyDiv.innerText = "1111";
+      //   if (event.currentTarget.innerHTML.indexOf("取消回复") > 0) {
+      //     event.currentTarget.innerHTML = event.currentTarget.innerHTML.replace(
+      //       /取消回复/,
+      //       "回复"
+      //     );
+      //   } else {
+      //     event.currentTarget.innerHTML = event.currentTarget.innerHTML.replace(
+      //       /回复/,
+      //       "取消回复"
+      //     );
+      //   }
+      //   if (
+      //     event.currentTarget.parentNode.parentNode.querySelector(
+      //       ".commentReplyMini"
+      //     )
+      //   )
+      //     return;
+      //   event.currentTarget.parentNode.parentNode.appendChild(replyDiv);
+      //   console.log(event.currentTarget.parentNode);
+      //   console.log(id);
+      // } else {
+      //   //评论回复
+      // }
     },
     deleteReply(index) {
       this.$confirm("此操作将永久删除该条评论, 是否继续?", "提示", {
@@ -646,8 +611,6 @@ export default {
             type: "success",
             message: "删除成功!",
           });
-          // console.log(id);
-          // console.log(this.commentData);
           this.commentData.splice(index, 1);
         })
         .catch(() => {
@@ -673,21 +636,18 @@ export default {
     replyCallBack() {
       const _this = this;
       eventBus.$on("commentButton", function (event) {
-        console.log("eventBus 1", event);
-        //静态回复数据
-        // let obj = {
-        //   id: "",
-        //   userId: 6,
-        //   userName: "张三",
-        //   avatar: require(`@/assets/avatar5.jpg`),
-        //   content: `${event.content.raw} (审核中)`,
-        //   createdTime: "1 秒前",
-        //   replyCount: 1,
-        //   likeCount: 1,
-        // };
-        _this.commentData.splice(9, 0, event);
-        // _this.commentData.push(obj);
-        //console.log(_this.commentData);
+        console.log("eventBus 回调", event);
+        //字回复
+        // eslint-disable-next-line
+        if (event.replyPostId) {
+          let commentKey = _this.commentData.findIndex(
+            (x) => x.id == event.replyPostId
+          );
+          _this.commentData[commentKey].lastThreeComments.splice(9, 0, event);
+        } else {
+          _this.commentData.splice(9, 0, event);
+        }
+        console.log("commentData", _this.commentData);
       });
     },
     scrollToTop() {
@@ -700,18 +660,18 @@ export default {
         const progress = (Date.now() - beginTime) / 500;
         if (progress < 1) {
           el.scrollTop = beginValue * (1 - easeInOutCubic(progress));
-          console.log(Date.now());
           rAF(frameFunc);
         } else {
           el.scrollTop = 0;
         }
       };
       rAF(frameFunc);
-      console.log(frameFunc);
+      // console.log(frameFunc);
     },
   },
   computed: {
     commentDatas: function () {
+      // console.log('原始',this.commentData);
       return this.commentData.slice(
         (this.page - 1) * this.limit,
         this.page * this.limit
@@ -723,7 +683,7 @@ export default {
 </script>
 
 <style  lang="scss" scoped>
-@import "../assets/main.scss";
+@import "../../assets/main.scss";
 .pagination {
   text-align: center;
   border-top: 1px solid #eee;
@@ -731,8 +691,9 @@ export default {
   padding: $mx 0;
   margin: 0 (-$ml) $ml;
 }
-.commentReplyMini {
+::v-deep .commentReplyMini {
   padding-left: 32px;
+  position: relative;
 }
 .wit-comment-items {
   .comment-title {
@@ -778,6 +739,17 @@ export default {
           font-size: 15px;
           font-weight: 500;
           cursor: pointer;
+          .isauthor {
+            color: #8590a6;
+            margin-left: 8px;
+            cursor: auto;
+          }
+          .info {
+            margin-right: 8px;
+            margin-left: 8px;
+            color: #8590a6;
+            cursor: auto;
+          }
         }
         .wit-comment-time {
           font-size: 14px;
@@ -863,6 +835,13 @@ export default {
       }
       .comment-children {
         padding-left: 33px;
+        .wit-comment-item {
+          position: relative;
+          .wit-comment-content,
+          .wit-comment-header {
+            position: inherit;
+          }
+        }
         &:last-child .wit-comment-inner::after {
           border: 0;
         }
