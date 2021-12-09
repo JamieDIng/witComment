@@ -6,24 +6,6 @@
 格式是基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/),
 坚持遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/).
 
-## [Unreleased]
-
-### Added
-
-- Add `flex-basis` utilities ([#5671](https://github.com/tailwindlabs/tailwindcss/pull/5671))
-
-### Changed
-
-- Don't use pointer cursor on disabled buttons by default ([#5772](https://github.com/tailwindlabs/tailwindcss/pull/5772))
-- Set default content value in preflight instead of within each before/after utility ([#5820](https://github.com/tailwindlabs/tailwindcss/pull/5820))
-- Removed `prefix` as a function ([#5829](https://github.com/tailwindlabs/tailwindcss/pull/5829))
-
-### Removed
-
-### Fixed
-
-- Configure chokidar's `awaitWriteFinish` setting to avoid occasional stale builds on Windows ([#5774](https://github.com/tailwindlabs/tailwindcss/pull/5774))
-
 
 ## [1.0.0-alpha.1] - 2021-10-01
 
